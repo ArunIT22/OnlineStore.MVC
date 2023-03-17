@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OnlineStore.MVC.Models;
 
 namespace OnlineStore.MVC.Controllers
 {
@@ -14,5 +15,11 @@ namespace OnlineStore.MVC.Controllers
         {
             return View();
         }
+
+        //[HttpPost, ActionName("Create")]
+        //public IActionResult CreateSuccessful()
+        //{
+        //    return View();
+        //}
     }
 }

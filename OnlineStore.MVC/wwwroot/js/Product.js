@@ -40,8 +40,9 @@ function productList(products) {
 
 function getProductListDataTable(products) {
     $("#tblProducts").dataTable({
-        paging: true,
         sorting: true,
+        paging: true,
+      
         "aaData": products,
         "columns": [
             { "data": "product_Name" },
@@ -77,7 +78,7 @@ function addNewProduct() {
         contentType: 'application/json',
         data: JSON.stringify(product),
         success: function (result) {
-            console.log(result);
+            alert(result.status);
             alert("Product created successfully, New Product Id :" + result["id"]);
         },
         error: function (request, message, error) {
