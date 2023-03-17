@@ -1,0 +1,23 @@
+﻿<h2>List of Product - using AJAX</h2>
+
+<table id="tblProducts" class="table table-hover">
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Selling Price</th>
+            <th>List Price</th>
+            <th>Discount</th>
+        </tr>
+    </thead>
+   
+</table>
+
+@section Scripts{
+    <script src="~/js/product.js"></script>
+    <script>
+        $(document).ready(function(){
+            getProductList();
+        });
+    </script>
+}
