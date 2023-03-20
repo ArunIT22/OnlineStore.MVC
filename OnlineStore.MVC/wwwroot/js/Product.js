@@ -40,9 +40,8 @@ function productList(products) {
 
 function getProductListDataTable(products) {
     $("#tblProducts").dataTable({
-        sorting: true,
+        order: [[3, 'desc']],
         paging: true,
-      
         "aaData": products,
         "columns": [
             { "data": "product_Name" },
@@ -50,6 +49,12 @@ function getProductListDataTable(products) {
             { "data": "sellingPrice" },
             { "data": "listPrice" },
             { "data": "discount" },
+            {
+                "data": '',               
+                render: (data, type, row) => {
+                    return `<a href='/Products/Edit/${row.product_Name}'>update</a>`;
+                }
+            }
         ]
     });
 }
@@ -77,9 +82,11 @@ function addNewProduct() {
         dataType: 'json',
         contentType: 'application/json',
         data: JSON.stringify(product),
-        success: function (result) {
-            alert(result.status);
-            alert("Product created successfully, New Product Id :" + result["id"]);
+        success: function (result, textStatus, jqXHR) {
+            console.log(textStatus + ": " + jqXHR.status);
+            //alert("Product created successfully, New Product Id :" + result["id"]);
+            var url = $("#RedirectTo").val();
+            window.location.href = url;
         },
         error: function (request, message, error) {
             errorHandler(request, message, error);

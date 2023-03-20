@@ -28,7 +28,13 @@ namespace OnlineStore.MVC.Controllers
                     var product = JsonConvert.DeserializeObject<List<ProductViewModel>>(result);
                     return View(product);
                 }
-                ViewData["ErrorMessage"] = "Unable to process your request";
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    ModelState.AddModelError("", "Unauthorized Access. Please provide valid credentials");
+                    return View();
+                }
+
+                ModelState.AddModelError("", "Unable to process your request. Server Error");
                 return View();
             }
         }
@@ -53,6 +59,10 @@ namespace OnlineStore.MVC.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
+            if (HttpContext.Session.GetString("token") == null)
+            {
+                return RedirectToAction("Login", "Accounts");
+            }
             ViewBag.Categories = await GetCategories();
             return View();
         }
@@ -62,9 +72,12 @@ namespace OnlineStore.MVC.Controllers
         {
             if (ModelState.IsValid)
             {
+                ViewBag.Categories = await GetCategories();
                 using (HttpClient client = new())
                 {
                     var url = string.Concat(baseUrl, "Products");
+                    //Add Token to AuthorizationHeader
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", HttpContext.Session.GetString("token"));
                     var response = await client.PostAsJsonAsync(url, model);
                     if (response.StatusCode == System.Net.HttpStatusCode.Created)
                     {
@@ -74,13 +87,17 @@ namespace OnlineStore.MVC.Controllers
                     {
                         ModelState.AddModelError("", "Invalid Request");
                     }
-                    else
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
-                        ModelState.AddModelError("", "Unable to process your request");
+                        ModelState.AddModelError("", "Unauthorized Access. Please provide valid credentials");
+                        return View();
                     }
+
+                    ModelState.AddModelError("", "Unable to process your request. Server Error");
+                    return View();
                 }
             }
-            ViewBag.Categories = await GetCategories();
+            
             return View(model);
         }
 
@@ -91,6 +108,7 @@ namespace OnlineStore.MVC.Controllers
             using (HttpClient client = new())
             {
                 var url = string.Concat(baseUrl, $"Products/{id}");
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", HttpContext.Session.GetString("token"));
                 var response = await client.GetAsync(url);
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
@@ -98,12 +116,18 @@ namespace OnlineStore.MVC.Controllers
                     var product = JsonConvert.DeserializeObject<AddOrUpdateViewModel>(result);
                     return View(product);
                 }
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
                     ModelState.AddModelError("", "No Product available");
                     return View(new AddOrUpdateViewModel());
                 }
-                ViewData["ErrorMessage"] = "Unable to process your request";
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    ModelState.AddModelError("", "Unauthorized Access. Please provide valid credentials");
+                    return View();
+                }
+
+                ModelState.AddModelError("", "Unable to process your request. Server Error");
                 return View();
             }
         }
@@ -114,10 +138,16 @@ namespace OnlineStore.MVC.Controllers
             using (HttpClient client = new())
             {
                 var url = string.Concat(baseUrl, "Products");
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", HttpContext.Session.GetString("token"));
                 var response = await client.PutAsJsonAsync(url, model);
                 if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
                 {
                     return RedirectToAction("Index");
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    ModelState.AddModelError("", "Unauthorized Access. Please provide valid credentials");
+                    return View();
                 }
                 else
                 {
@@ -135,6 +165,7 @@ namespace OnlineStore.MVC.Controllers
             using (HttpClient client = new())
             {
                 var url = string.Concat(baseUrl, $"Products/{id}");
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", HttpContext.Session.GetString("token"));
                 var response = await client.GetAsync(url);
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
@@ -158,6 +189,7 @@ namespace OnlineStore.MVC.Controllers
             using (HttpClient client = new())
             {
                 var url = string.Concat(baseUrl, $"Products?id={id}");
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", HttpContext.Session.GetString("token"));
                 var response = await client.DeleteAsync(url);
                 if (response.IsSuccessStatusCode)
                 {
